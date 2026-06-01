@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>健身課程報價試算器</title>
+    <style>
+        /* 融合上傳圖片：草地綠、拉力帶天藍、運動短褲競技紅 */
+        :root {
+            --primary-color: #386641;   /* 專業草地深綠 */
+            --primary-hover: #2b5032;
+            --accent-blue: #4fa8ca;     /* 彈力帶活力天藍 */
+            --accent-red: #bc4749;      /* 競技短褲活力紅 */
+            --bg-color: #f3f6f3;        /* 輕盈草地粉綠底色 */
+            --card-bg: #ffffff;
+            --text-color: #2b322c;      /* 深森林灰 */
+            --text-muted: #626e64;      /* 霧灰綠 */
+            --border-color: #d1d9d1;    /* 淺綠灰邊框 */
+            --error-color: #bc4749;
+            --success-color: #386641;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.5;
+            padding: 24px 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 480px; /* 手機與桌面自適應 */
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: 0 8px 30px rgba(56, 102, 65, 0.08);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+        }
+
+        /* 運動草地深綠與線條感標頭 */
+        .header {
+            background-color: var(--primary-color);
+            color: #ffffff;
+            padding: 24px 20px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* 模擬跑道與拉伸帶的律動裝飾線 */
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, transparent 45%, rgba(79, 168, 202, 0.15) 46%, rgba(79, 168, 202, 0.15) 50%, transparent 51%);
+            background-size: 20px 20px;
+            pointer-events: none;
+        }
+
+        .header-badge {
+            background-color: var(--accent-blue);
+            color: #ffffff;
+            font-size: 0.75rem;
+            font-weight: bold;
+            padding: 3px 10px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            font-size: 1.35rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        .header p {
+            font-size: 0.85rem;
+            margin-top: 6px;
+            opacity: 0.9;
+            color: #e8efe9;
+        }
+
+        .form-section {
+            padding: 24px 20px;
+        }
+
+        /* 欄位樣式 */
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 700;
+            font-size: 0.95rem;
+            margin-bottom: 10px;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* 輸入框增加體能拉伸般的彈力感（藍色 focus 邊框） */
+        .input-number {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            font-size: 1.05rem;
+            color: var(--text-color);
+            outline: none;
+            transition: all 0.2s ease-in-out;
+            background-color: #fafbfa;
+            font-weight: 600;
+        }
+
+        .input-number:focus {
+            border-color: var(--accent-blue);
+            background-color: #ffffff;
+            box-shadow: 0 0 0 4px rgba(79, 168, 202, 0.15);
+        }
+
+        /* 錯誤訊息提示 */
+        .error-message {
+            color: var(--error-color);
+            font-size: 0.85rem;
+            margin-top: 8px;
+            display: none;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* 運動感複選框 */
+        .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            padding: 14px;
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            background-color: #fafbfa;
+        }
+
+        .checkbox-item:hover {
+            border-color: var(--primary-color);
+            background-color: #f7faf7;
+        }
+
+        /* 勾選後的狀態：邊框變天藍，並有微陰影 */
+        .checkbox-item.checked-active {
+            border-color: var(--accent-blue);
+            background-color: rgba(79, 168, 202, 0.05);
+            box-shadow: 0 4px 12px rgba(79, 168, 202, 0.08);
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            margin-right: 14px;
+            accent-color: var(--accent-blue);
+            cursor: pointer;
+        }
+
+        .checkbox-text {
+            flex: 1;
+        }
+
+        .checkbox-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--text-color);
+            display: block;
+        }
+
+        .checkbox-desc {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 3px;
+            display: block;
+        }
+
+        /* 計算結果區：深草綠與大地色溫和背景 */
+        .result-section {
+            background-color: #f4f6f4;
+            padding: 24px 20px;
+            border-top: 2px dashed var(--border-color);
+        }
+
+        .result-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            margin-bottom: 18px;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .result-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 24px;
+        }
+
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            font-size: 0.92rem;
+            color: var(--text-color);
+            border-bottom: 1px solid rgba(56, 102, 65, 0.06);
+        }
+
+        /* 堂數折抵徽章：活力天藍色 */
+        .discount-badge {
+            background-color: var(--accent-blue);
+            color: #ffffff;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            margin-left: 8px;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        /* 總計金額：亮眼的競技短褲紅 */
+        .result-row.total-row {
+            border-top: 2px solid var(--primary-color);
+            border-bottom: none;
+            padding-top: 16px;
+            margin-top: 8px;
+            font-weight: 800;
+            font-size: 1.25rem;
+            color: var(--accent-red);
+        }
+
+        /* 複製按鈕：活力草地深綠 */
+        .btn-copy {
+            width: 100%;
+            background-color: var(--primary-color);
+            color: #ffffff;
+            border: none;
+            padding: 16px;
+            border-radius: 10px;
+            font-size: 1.05rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 12px rgba(56, 102, 65, 0.15);
+        }
+
+        .btn-copy:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(56, 102, 65, 0.25);
+        }
+
+        .btn-copy:active {
+            transform: translateY(1px);
+        }
+
+        /* 提示彈出 */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background-color: #2b322c;
+            color: #ffffff;
+            padding: 14px 28px;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 999;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* 響應式：手機 375px 完全不破版 */
+        @media (max-width: 375px) {
+            body {
+                padding: 12px 6px;
+            }
+            .header {
+                padding: 20px 15px;
+            }
+            .header h1 {
+                font-size: 1.2rem;
+            }
+            .form-section, .result-section {
+                padding: 18px 15px;
+            }
+            .checkbox-title {
+                font-size: 0.9rem;
+            }
+            .result-row.total-row {
+                font-size: 1.15rem;
+            }
+            .btn-copy {
+                padding: 14px;
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- 標頭（注入體能拉伸與戶外活力感） -->
+        <div class="header">
+            <span class="header-badge">FITNESS & TRAINING</span>
+            <h1>健身課程報價試算器</h1>
+            <p>輸入堂數即可即時預估，一鍵複製專業 LINE 報價</p>
+        </div>
+
+        <!-- 輸入欄位 -->
+        <div class="form-section">
+            <!-- 堂數 -->
+            <div class="form-group">
+                <label class="form-label" for="lessons">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+                    1. 規劃堂數（每堂 NT$800）
+                </label>
+                <input type="number" id="lessons" class="input-number" value="4" min="1" step="1" placeholder="請輸入需要的堂數">
+                <div id="error-lessons" class="error-message">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                    請輸入 1 以上的整數
+                </div>
+            </div>
+
+            <!-- 加購項目 -->
+            <div class="form-group">
+                <label class="form-label">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
+                    2. 加購項目（多選）
+                </label>
+                <div class="checkbox-group">
+                    <!-- 飲食菜單 -->
+                    <label class="checkbox-item" id="label_diet" for="add_on_diet">
+                        <input type="checkbox" id="add_on_diet" value="1200">
+                        <div class="checkbox-text">
+                            <span class="checkbox-title">飲食菜單規劃</span>
+                            <span class="checkbox-desc">固定 +NT$1,200</span>
+                        </div>
+                    </label>
+
+                    <!-- 體態評估 -->
+                    <label class="checkbox-item" id="label_posture" for="add_on_posture">
+                        <input type="checkbox" id="add_on_posture" value="600">
+                        <div class="checkbox-text">
+                            <span class="checkbox-title">體態評估報告</span>
+                            <span class="checkbox-desc">固定 +NT$600</span>
+                        </div>
+                    </label>
+
+                    <!-- 到府授課 -->
+                    <label class="checkbox-item" id="label_home" for="add_on_home">
+                        <input type="checkbox" id="add_on_home" value="150">
+                        <div class="checkbox-text">
+                            <span class="checkbox-title">到府外派授課</span>
+                            <span class="checkbox-desc">每堂外派加收 +NT$150</span>
+                        </div>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- 計算結果區 -->
+        <div class="result-section">
+            <div class="result-title">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+                即時預估報價明細
+            </div>
+
+            <div class="result-table">
+                <div class="result-row">
+                    <span>基礎課程費用 <span id="base-detail">(4堂 × 800)</span></span>
+                    <span>NT$ <span id="raw-course-fee">3,200</span></span>
+                </div>
+                <div class="result-row">
+                    <span>折扣後課程費 <span id="discount-label" class="discount-badge" style="display:none;">1–9 堂無折扣</span></span>
+                    <span>NT$ <span id="discounted-course-fee">3,200</span></span>
+                </div>
+                <div class="result-row">
+                    <span>加購項目總額</span>
+                    <span>NT$ <span id="addon-total-fee">0</span></span>
+                </div>
+                <div class="result-row">
+                    <span>小計</span>
+                    <span>NT$ <span id="subtotal-fee">3,200</span></span>
+                </div>
+                <div class="result-row">
+                    <span>營業稅 (5%)</span>
+                    <span>NT$ <span id="tax-fee">160</span></span>
+                </div>
+                <div class="result-row total-row">
+                    <span>總計報價 (含稅)</span>
+                    <span>NT$ <span id="total-fee">3,360</span></span>
+                </div>
+            </div>
+
+            <button class="btn-copy" id="btn-copy">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                複製 LINE 報價單
+            </button>
+        </div>
+    </div>
+
+    <!-- 成功提示彈出 -->
+    <div id="toast" class="toast">📋 報價單已成功複製！可直接貼給學員囉！</div>
+
+    <script>
+        // DOM 元素
+        const lessonsInput = document.getElementById('lessons');
+        const errorLessons = document.getElementById('error-lessons');
+        
+        const addonDiet = document.getElementById('add_on_diet');
+        const addonPosture = document.getElementById('add_on_posture');
+        const addonHome = document.getElementById('add_on_home');
+
+        const labelDiet = document.getElementById('label_diet');
+        const labelPosture = document.getElementById('label_posture');
+        const labelHome = document.getElementById('label_home');
+
+        // 結果欄位
+        const displayBaseDetail = document.getElementById('base-detail');
+        const displayRawCourseFee = document.getElementById('raw-course-fee');
+        const displayDiscountLabel = document.getElementById('discount-label');
+        const displayDiscountedCourseFee = document.getElementById('discounted-course-fee');
+        const displayAddonTotalFee = document.getElementById('addon-total-fee');
+        const displaySubtotalFee = document.getElementById('subtotal-fee');
+        const displayTaxFee = document.getElementById('tax-fee');
+        const displayTotalFee = document.getElementById('total-fee');
+        
+        const btnCopy = document.getElementById('btn-copy');
+        const toast = document.getElementById('toast');
+
+        let quoteSnapshot = null;
+
+        // 格式化千分位
+        function formatNumber(num) {
+            return Math.round(num).toLocaleString('zh-TW');
+        }
+
+        // 更新加購項目外框高亮 (Active class)
+        function updateCheckboxHighlights() {
+            if (addonDiet.checked) labelDiet.classList.add('checked-active');
+            else labelDiet.classList.remove('checked-active');
+
+            if (addonPosture.checked) labelPosture.classList.add('checked-active');
+            else labelPosture.classList.remove('checked-active');
+
+            if (addonHome.checked) labelHome.classList.add('checked-active');
+            else labelHome.classList.remove('checked-active');
+        }
+
+        // 主計算邏輯
+        function calculateQuote() {
+            updateCheckboxHighlights();
+
+            const rawVal = lessonsInput.value.trim();
+            const lessons = parseFloat(rawVal);
+
+            // 1. 嚴格輸入驗證
+            if (rawVal === '' || isNaN(lessons) || lessons <= 0 || !Number.isInteger(lessons)) {
+                errorLessons.style.display = 'flex';
+                clearResults();
+                btnCopy.disabled = true;
+                btnCopy.style.opacity = '0.4';
+                btnCopy.style.cursor = 'not-allowed';
+                return;
+            } else {
+                errorLessons.style.display = 'none';
+                btnCopy.disabled = false;
+                btnCopy.style.opacity = '1';
+                btnCopy.style.cursor = 'pointer';
+            }
+
+            // 1. 課程費 = 堂數 × 800
+            const rawCourseFee = lessons * 800;
+
+            // 2. 折扣率：1–9 堂 = 1.0；10–19 堂 = 0.9；20 堂以上 = 0.85
+            let discountRate = 1.0;
+            let discountText = '無折扣';
+            if (lessons >= 10 && lessons <= 19) {
+                discountRate = 0.9;
+                discountText = '10-19堂 9折';
+            } else if (lessons >= 20) {
+                discountRate = 0.85;
+                discountText = '20堂以上 85折';
+            }
+
+            // 3. 折扣後課程費 = 課程費 × 折扣率
+            const discountedCourseFee = rawCourseFee * discountRate;
+
+            // 4. 加購總額 = 飲食菜單(1200) + 體態評估(600) + 到府授課(堂數 × 150)
+            let addonTotal = 0;
+            const chosenAddons = [];
+
+            if (addonDiet.checked) {
+                addonTotal += 1200;
+                chosenAddons.push('飲食菜單規劃 (+NT$1,200)');
+            }
+            if (addonPosture.checked) {
+                addonTotal += 600;
+                chosenAddons.push('體態評估報告 (+NT$600)');
+            }
+            if (addonHome.checked) {
+                const homeFee = lessons * 150;
+                addonTotal += homeFee;
+                chosenAddons.push(`到府授課 (${lessons}堂 × NT$150，+NT$${formatNumber(homeFee)})`);
+            }
+
+            // 5. 小計 = 折扣後課程費 + 加購總額
+            const subtotal = discountedCourseFee + addonTotal;
+
+            // 6. 營業稅 = 小計 × 0.05
+            const tax = subtotal * 0.05;
+
+            // 7. 總計 = 小計 + 營業稅
+            const total = subtotal + tax;
+
+            // 更新 UI 明細
+            displayBaseDetail.textContent = `(${lessons}堂 × 800)`;
+            displayRawCourseFee.textContent = formatNumber(rawCourseFee);
+
+            if (discountRate < 1.0) {
+                displayDiscountLabel.textContent = discountText;
+                displayDiscountLabel.style.display = 'inline-block';
+            } else {
+                displayDiscountLabel.style.display = 'none';
+            }
+            
+            displayDiscountedCourseFee.textContent = formatNumber(discountedCourseFee);
+            displayAddonTotalFee.textContent = formatNumber(addonTotal);
+            displaySubtotalFee.textContent = formatNumber(subtotal);
+            displayTaxFee.textContent = formatNumber(tax);
+            displayTotalFee.textContent = formatNumber(total);
+
+            // 供複製用的資料快照
+            quoteSnapshot = {
+                lessons,
+                rawCourseFee,
+                discountText: discountRate < 1.0 ? discountText : '原價',
+                discountedCourseFee,
+                chosenAddons,
+                addonTotal,
+                subtotal,
+                tax,
+                total
+            };
+        }
+
+        function clearResults() {
+            displayBaseDetail.textContent = '';
+            displayRawCourseFee.textContent = '-';
+            displayDiscountLabel.style.display = 'none';
+            displayDiscountedCourseFee.textContent = '-';
+            displayAddonTotalFee.textContent = '-';
+            displaySubtotalFee.textContent = '-';
+            displayTaxFee.textContent = '-';
+            displayTotalFee.textContent = '-';
+            quoteSnapshot = null;
+        }
+
+        // 複製至剪貼簿
+        function copyToClipboard(text) {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.style.position = 'fixed';
+            document.body.appendChild(textarea);
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                showToast();
+            } catch (err) {
+                console.error('複製失敗', err);
+            }
+            document.body.removeChild(textarea);
+        }
+
+        function showToast() {
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2500);
+        }
+
+        // 產出 LINE 貼圖格式
+        function generateQuoteText() {
+            if (!quoteSnapshot) return;
+
+            const q = quoteSnapshot;
+            let text = `🏋️‍♂️【個人客製健身課程報價單】🏋️‍♂️\n`;
+            text += `------------------------------------\n`;
+            text += `● 規劃堂數：${q.lessons} 堂\n`;
+            text += `● 課程原價：NT$ ${formatNumber(q.rawCourseFee)}\n`;
+            text += `● 堂數折扣：${q.discountText} (折扣後課程費：NT$ ${formatNumber(q.discountedCourseFee)})\n`;
+            
+            if (q.chosenAddons.length > 0) {
+                text += `\n● 加購專屬項目：\n`;
+                q.chosenAddons.forEach(item => {
+                    text += `   - ${item}\n`;
+                });
+                text += `● 加購總計：NT$ ${formatNumber(q.addonTotal)}\n`;
+            } else {
+                text += `\n● 加購專屬項目：無\n`;
+            }
+            
+            text += `------------------------------------\n`;
+            text += `● 項目小計：NT$ ${formatNumber(q.subtotal)}\n`;
+            text += `● 營業稅 (5%)：NT$ ${formatNumber(q.tax)}\n`;
+            text += `● 報價總計 (含稅)：NT$ ${formatNumber(q.total)}\n`;
+            text += `------------------------------------\n`;
+            text += `※ 此報價單依據訓練配置即時生成，期待與您一同開啟體能訓練旅程！`;
+
+            return text;
+        }
+
+        // 綁定事件
+        lessonsInput.addEventListener('input', calculateQuote);
+        addonDiet.addEventListener('change', calculateQuote);
+        addonPosture.addEventListener('change', calculateQuote);
+        addonHome.addEventListener('change', calculateQuote);
+
+        btnCopy.addEventListener('click', () => {
+            const text = generateQuoteText();
+            if (text) {
+                copyToClipboard(text);
+            }
+        });
+
+        // 初始計算
+        window.onload = function() {
+            calculateQuote();
+        };
+    </script>
+</body>
+</html>
